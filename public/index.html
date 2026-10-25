@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>PV Classes ERP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"/>
+<style>
+:root{
+  --p:#4361ee;--p2:#3a56d4;--acc:#7c3aed;--ok:#10b981;--warn:#f59e0b;--err:#ef4444;
+  --bg:#f8fafc;--surf:#ffffff;--surf2:#f1f5f9;--border:#e2e8f0;
+  --tx:#0f172a;--tx2:#475569;--tx3:#94a3b8;
+  --r:14px;--r2:10px;--sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 16px rgba(0,0,0,.10);--sh3:0 8px 32px rgba(67,97,238,.18);
+  --sidebar:260px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.5}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit}
+a{text-decoration:none;color:inherit}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+
+/* ── Animations ── */
+@keyframes fadeSlideUp{to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+
+.dashboard-card{opacity:0;transform:translateY(16px);animation:fadeSlideUp .4s cubic-bezier(.16,1,.3,1) forwards}
+.card-1{animation-delay:100ms}.card-2{animation-delay:200ms}.card-3{animation-delay:300ms}
+.card-4{animation-delay:400ms}.card-5{animation-delay:480ms}.card-6{animation-delay:560ms}
+
+/* ── Auth Screen ── */
+#auth-screen{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;
+  background:linear-gradient(135deg,#4361ee 0%,#7c3aed 100%);
+  padding:24px;
+}
+.auth-card{
+  background:var(--surf);border-radius:24px;padding:48px;
+  width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,.18);
+}
+.auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:36px}
+.auth-logo-icon{
+  width:48px;height:48px;border-radius:14px;
+  background:linear-gradient(135deg,#4361ee,#7c3aed);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;box-shadow:0 4px 12px rgba(67,97,238,.4)
+}
+.auth-logo-text{font-size:20px;font-weight:700;color:var(--tx)}
+.auth-logo-sub{font-size:12px;color:var(--tx2);margin-top:1px}
+.auth-title{font-size:26px;font-weight:700;margin-bottom:6px}
+.auth-sub{color:var(--tx2);margin-bottom:32px;font-size:14px}
+.auth-tabs{display:flex;background:var(--surf2);border-radius:10px;padding:4px;margin-bottom:28px}
+.auth-tab{flex:1;padding:8px;text-align:center;border-radius:7px;cursor:pointer;font-weight:500;color:var(--tx2);transition:.2s;font-size:13px}
+.auth-tab.active{background:#fff;color:var(--p);box-shadow:var(--sh)}
+.form-group{margin-bottom:18px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:6px;letter-spacing:.4px;text-transform:uppercase}
+.form-input{
+  width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;
+  font-size:14px;transition:.15s;background:var(--surf);outline:none;color:var(--tx)
+}
+.form-input:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(67,97,238,.12)}
+.btn-primary{
+  width:100%;padding:13px;border:none;border-radius:11px;
+  background:linear-gradient(135deg,var(--p),var(--acc));color:#fff;
+  font-size:14px;font-weight:600;transition:.2s;letter-spacing:.2px
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:var(--sh3)}
+.btn-primary:active{transform:none}
+.demo-hint{
+  margin-top:20px;background:var(--surf2);border-radius:10px;padding:14px;
+  font-size:12px;color:var(--tx2);line-height:1.7
+}
+.demo-hint b{color:var(--p)}
+.auth-err{color:var(--err);font-size:13px;margin-top:10px;display:none}
+
+/* ── Layout ── */
+#app-shell{display:none;height:100vh;overflow:hidden;flex-direction:row}
+#app-shell.active{display:flex}
+
+/* ── Sidebar ── */
+.sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:var(--surf);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+  transition:.3s;
+}
+.sidebar-header{padding:22px 20px 16px;border-bottom:1px solid var(--border)}
+.sidebar-brand{display:flex;align-items:center;gap:10px}
+.brand-icon{
+  width:38px;height:38px;border-radius:11px;
+  background:linear-gradient(135deg,var(--p),var(--acc));
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0
+}
+.brand-name{font-size:15px;font-weight:700}
+.brand-tag{font-size:11px;color:var(--tx3);letter-spacing:.3px}
+
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 10px}
+.nav-section-label{
+  font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--tx3);padding:10px 10px 6px
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:9px;cursor:pointer;
+  color:var(--tx2);font-weight:500;font-size:13.5px;
+  transition:.15s;margin-bottom:2px;
+}
+.nav-item:hover{background:var(--surf2);color:var(--tx)}
+.nav-item.active{background:rgba(67,97,238,.1);color:var(--p);font-weight:600}
+.nav-item.active .nav-icon{color:var(--p)}
+.nav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{
+  margin-left:auto;background:var(--err);color:#fff;
+  font-size:10px;font-weight:700;border-radius:99px;
+  padding:1px 6px;min-width:18px;text-align:center
+}
+
+.sidebar-footer{padding:14px;border-top:1px solid var(--border)}
+.user-card{
+  display:flex;align-items:center;gap:10px;padding:10px;
+  border-radius:10px;background:var(--surf2);cursor:pointer;
+  transition:.15s
+}
+.user-card:hover{background:var(--border)}
+.avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,var(--p),var(--acc));
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#fff;flex-shrink:0
+}
+.avatar.sm{width:28px;height:28px;font-size:11px}
+.avatar.lg{width:52px;height:52px;font-size:20px}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:11px;color:var(--tx3)}
+
+/* ── Main area ── */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{
+  height:60px;display:flex;align-items:center;
+  padding:0 24px;gap:16px;
+  background:var(--surf);border-bottom:1px solid var(--border);
+  flex-shrink:0
+}
+.topbar-title{font-size:16px;font-weight:700;flex:1}
+.topbar-search{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surf2);border:1.5px solid transparent;border-radius:9px;
+  padding:7px 12px;transition:.15s
+}
+.topbar-search:focus-within{border-color:var(--p);background:#fff}
+.topbar-search input{border:none;background:transparent;outline:none;font-size:13px;width:180px;color:var(--tx)}
+.topbar-search input::placeholder{color:var(--tx3)}
+.topbar-btn{
+  width:36px;height:36px;border-radius:9px;border:none;background:var(--surf2);
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  color:var(--tx2);transition:.15s
+}
+.topbar-btn:hover{background:var(--border);color:var(--tx)}
+.page-content{flex:1;overflow-y:auto;padding:24px}
+
+/* ── Page header ── */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px}
+.page-title{font-size:22px;font-weight:700}
+.page-sub{font-size:13px;color:var(--tx2);margin-top:2px}
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;
+  border:none;transition:.15s;white-space:nowrap
+}
+.btn-sm{padding:6px 13px;font-size:12px}
+.btn-blue{background:var(--p);color:#fff}
+.btn-blue:hover{background:var(--p2);box-shadow:0 4px 12px rgba(67,97,238,.3)}
+.btn-ghost{background:var(--surf);border:1.5px solid var(--border);color:var(--tx2)}
+.btn-ghost:hover{background:var(--surf2);color:var(--tx)}
+.btn-red{background:rgba(239,68,68,.1);color:var(--err);border:1.5px solid rgba(239,68,68,.2)}
+.btn-red:hover{background:rgba(239,68,68,.15)}
+.btn-green{background:rgba(16,185,129,.1);color:var(--ok);border:1.5px solid rgba(16,185,129,.2)}
+
+/* ── Stat cards ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{
+  background:var(--surf);border-radius:var(--r);padding:20px;
+  box-shadow:var(--sh);border:1px solid var(--border);
+}
+.stat-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.stat-icon{
+  width:40px;height:40px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;font-size:18px
+}
+.stat-trend{font-size:11px;font-weight:600;display:flex;align-items:center;gap:3px}
+.stat-trend.up{color:var(--ok)}.stat-trend.down{color:var(--err)}
+.stat-value{font-size:26px;font-weight:800;letter-spacing:-.5px}
+.stat-label{font-size:12px;color:var(--tx2);margin-top:3px}
+.stat-bar{height:4px;background:var(--surf2);border-radius:99px;margin-top:14px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:99px;transition:width .6s ease}
+
+/* ── Table ── */
+.table-card{background:var(--surf);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh);overflow:hidden}
+.table-toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 18px;border-bottom:1px solid var(--border);gap:12px
+}
+.table-title{font-size:15px;font-weight:700}
+.table-search{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surf2);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;
+  transition:.15s
+}
+.table-search:focus-within{border-color:var(--p);background:#fff}
+.table-search input{border:none;background:transparent;outline:none;font-size:13px;color:var(--tx);width:160px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{
+  padding:11px 16px;text-align:left;font-size:11px;
+  font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+  color:var(--tx3);background:var(--surf2);border-bottom:1px solid var(--border)
+}
+td{padding:13px 16px;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--tx)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(67,97,238,.02)}
+.table-empty{text-align:center;padding:48px 16px;color:var(--tx3)}
+.table-pagination{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 18px;border-top:1px solid var(--border);font-size:12px;color:var(--tx2)
+}
+
+/* ── Badges ── */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600
+}
+.badge-blue{background:rgba(67,97,238,.1);color:var(--p)}
+.badge-green{background:rgba(16,185,129,.1);color:var(--ok)}
+.badge-yellow{background:rgba(245,158,11,.1);color:#d97706}
+.badge-red{background:rgba(239,68,68,.1);color:var(--err)}
+.badge-purple{background:rgba(124,58,237,.1);color:var(--acc)}
+.badge-gray{background:var(--surf2);color:var(--tx2)}
+
+/* ── Card grid ── */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.content-card{
+  background:var(--surf);border-radius:var(--r);padding:20px;
+  border:1px solid var(--border);box-shadow:var(--sh);transition:.2s;
+}
+.content-card:hover{box-shadow:var(--sh2);transform:translateY(-1px)}
+
+/* ── Modal ── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(15,23,42,.5);
+  display:none;align-items:center;justify-content:center;z-index:1000;
+  backdrop-filter:blur(4px);padding:16px
+}
+.modal-overlay.open{display:flex;animation:fadeIn .15s ease}
+.modal{
+  background:var(--surf);border-radius:20px;padding:28px;
+  width:100%;max-width:480px;box-shadow:0 24px 64px rgba(0,0,0,.2);
+  animation:fadeSlideUp .2s ease forwards;
+}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.modal-title{font-size:17px;font-weight:700}
+.modal-close{
+  width:32px;height:32px;border:none;background:var(--surf2);
+  border-radius:8px;cursor:pointer;font-size:16px;color:var(--tx2)
+}
+.modal-close:hover{background:var(--border)}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
+
+/* ── Progress ── */
+.progress{height:6px;background:var(--surf2);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;transition:width .6s ease}
+.progress-fill.blue{background:var(--p)}
+.progress-fill.green{background:var(--ok)}
+.progress-fill.yellow{background:var(--warn)}
+.progress-fill.red{background:var(--err)}
+
+/* ── Chart donut ── */
+.donut-wrap{position:relative;width:120px;height:120px;flex-shrink:0}
+.donut-wrap svg{transform:rotate(-90deg)}
+.donut-center{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;pointer-events:none
+}
+
+/* ── Notice card ── */
+.notice-item{
+  padding:16px;border-radius:12px;border:1px solid var(--border);
+  background:var(--surf);margin-bottom:10px;display:flex;gap:14px
+}
+.notice-accent{width:4px;border-radius:99px;flex-shrink:0;min-height:40px}
+
+/* ── Timetable ── */
+.tt-slot{
+  background:var(--surf);border:1px solid var(--border);border-radius:10px;
+  padding:14px;margin-bottom:8px
+}
+.tt-slot-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.tt-time{font-size:12px;font-weight:600;color:var(--tx3)}
+.tt-subj{font-weight:700;font-size:14px}
+.tt-meta{font-size:12px;color:var(--tx2);margin-top:3px}
+
+/* ── Fee timeline ── */
+.fee-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.fee-item:last-child{border-bottom:none}
+.fee-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:rgba(16,185,129,.1);display:flex;align-items:center;
+  justify-content:center;font-size:15px;flex-shrink:0
+}
+.fee-info{flex:1}
+.fee-name{font-size:13px;font-weight:600}
+.fee-date{font-size:11px;color:var(--tx3)}
+.fee-amount{font-size:15px;font-weight:700;color:var(--ok)}
+
+/* ── Kanban ── */
+.kanban-board{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;min-height:400px}
+.kanban-col{background:var(--surf2);border-radius:var(--r);padding:14px}
+.kanban-col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.kanban-col-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--tx2)}
+.kanban-count{background:var(--border);color:var(--tx2);font-size:11px;font-weight:700;border-radius:99px;padding:1px 7px}
+.kanban-task{
+  background:var(--surf);border-radius:10px;padding:13px;
+  margin-bottom:8px;border:1px solid var(--border);cursor:grab;
+  box-shadow:var(--sh);
+}
+.kanban-task:hover{box-shadow:var(--sh2)}
+.kanban-task-title{font-size:13px;font-weight:600;margin-bottom:6px}
+.kanban-task-meta{display:flex;align-items:center;justify-content:space-between}
+
+/* ── Student portal ── */
+.portal-header{
+  background:linear-gradient(135deg,var(--p),var(--acc));
+  border-radius:16px;padding:24px;color:#fff;margin-bottom:20px
+}
+.portal-name{font-size:22px;font-weight:800;margin-bottom:4px}
+.portal-info{font-size:13px;opacity:.85}
+.portal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.portal-stat{background:rgba(255,255,255,.15);border-radius:10px;padding:12px;text-align:center;backdrop-filter:blur(8px)}
+.portal-stat-val{font-size:22px;font-weight:800}
+.portal-stat-lbl{font-size:11px;opacity:.8;margin-top:2px}
+
+/* ── Loading/Empty states ── */
+.loading-spinner{
+  width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--p);
+  border-radius:50%;animation:spin .7s linear infinite;margin:40px auto
+}
+.empty-state{text-align:center;padding:56px 24px;color:var(--tx3)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-text{font-size:15px;font-weight:600;color:var(--tx2);margin-bottom:6px}
+.empty-sub{font-size:13px}
+
+/* ── Toast ── */
+#toast{
+  position:fixed;bottom:24px;right:24px;z-index:2000;
+  display:flex;flex-direction:column;gap:8px
+}
+.toast-item{
+  background:var(--tx);color:#fff;padding:12px 18px;border-radius:11px;
+  font-size:13px;font-weight:500;box-shadow:var(--sh2);
+  animation:fadeSlideUp .3s ease forwards;max-width:320px
+}
+.toast-item.ok{background:#1e4d3a;color:#6ee7b7}
+.toast-item.err{background:#4d1e1e;color:#fca5a5}
+
+/* ── Forms ── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-select{
+  width:100%;padding:10px 14px;border:1.5px solid var(--border);
+  border-radius:10px;font-size:13px;background:var(--surf);
+  outline:none;color:var(--tx);cursor:pointer
+}
+.form-select:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(67,97,238,.12)}
+.form-textarea{
+  width:100%;padding:10px 14px;border:1.5px solid var(--border);
+  border-radius:10px;font-size:13px;background:var(--surf);
+  outline:none;color:var(--tx);resize:vertical;min-height:80px
+}
+.form-textarea:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(67,97,238,.12)}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ AUTH SCREEN ═══════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">📚</div>
+      <div>
+        <div class="auth-logo-text">PV Classes</div>
+        <div class="auth-logo-sub">Pathya Vriksha Institute</div>
+      </div>
+    </div>
+    <h2 class="auth-title">Welcome back</h2>
+    <p class="auth-sub">Sign in to access your ERP dashboard</p>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchRole('admin')">Admin</div>
+      <div class="auth-tab" onclick="switchRole('student')">Student</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input id="login-email" class="form-input" type="email" placeholder="you@example.com" autocomplete="email"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input id="login-pass" class="form-input" type="password" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <div class="auth-err" id="login-err"></div>
+    <button class="btn-primary" onclick="doLogin()" id="login-btn" style="margin-top:8px">Sign In →</button>
+    <div class="demo-hint">
+      <b>Admin demo:</b> keshavpurohit@gmail.com / admin123<br>
+      <b>Student demo:</b> arjun@pvclasses.in / student123
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ APP SHELL ═════════════════════════════════ -->
+<div id="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="brand-icon">📚</div>
+        <div>
+          <div class="brand-name">PV Classes</div>
+          <div class="brand-tag">ERP System</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card" onclick="showLogoutConfirm()">
+        <div class="avatar" id="nav-avatar">A</div>
+        <div class="user-info">
+          <div class="user-name" id="nav-name">User</div>
+          <div class="user-role" id="nav-role">admin</div>
+        </div>
+        <span style="color:var(--tx3);font-size:12px">⏻</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-area">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-search">
+        <span style="color:var(--tx3)">🔍</span>
+        <input placeholder="Search..." id="global-search" oninput="globalSearch(this.value)"/>
+      </div>
+      <button class="topbar-btn" title="Notifications" onclick="toast('No new notifications','ok')">🔔</button>
+      <button class="topbar-btn" title="Refresh" onclick="refreshPage()">↻</button>
+    </div>
+    <div class="page-content" id="page-content"></div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast"></div>
+
+<!-- ──────────────────────────── MODAL ──────────────────────────── -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal" id="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Modal</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE & CONFIG
+// ─────────────────────────────────────────────────────────────────────────────
+const API = window.location.origin + '/api';
+let TOKEN = localStorage.getItem('pv_token') || '';
+let ME = JSON.parse(localStorage.getItem('pv_me') || 'null');
+let currentPage = '';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function qs(sel, root = document) { return root.querySelector(sel); }
+function toast(msg, type = '', dur = 3000) {
+  const el = document.createElement('div');
+  el.className = 'toast-item' + (type ? ' ' + type : '');
+  el.textContent = msg;
+  qs('#toast').appendChild(el);
+  setTimeout(() => el.remove(), dur);
+}
+function fmt(n) { return '₹' + Number(n || 0).toLocaleString('en-IN'); }
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'; }
+function pct(a, b) { return b ? Math.round((a / b) * 100) : 0; }
+function initials(name) { return (name || 'U').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase(); }
+function pctColor(p) { return p >= 75 ? 'green' : p >= 50 ? 'yellow' : 'red'; }
+function badgeType(t) {
+  const m = { active: 'badge-green', inactive: 'badge-gray', passed: 'badge-blue',
+              urgent: 'badge-red', exam: 'badge-yellow', holiday: 'badge-purple', general: 'badge-gray',
+              present: 'badge-green', absent: 'badge-red', late: 'badge-yellow' };
+  return m[t] || 'badge-gray';
+}
+
+// ─── API ──────────────────────────────────────────────────────────────────────
+async function api(path, opts = {}) {
+  const res = await fetch(API + path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN, ...(opts.headers || {}) },
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  if (res.status === 401) { logout(); return null; }
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.error || 'Request failed');
+  }
+  return res.json();
+}
+
+// ─── Auth ──────────────────────────────────────────────────────────────────────
+let loginRole = 'admin';
+function switchRole(role) {
+  loginRole = role;
+  qs('#auth-screen .auth-tab.active').classList.remove('active');
+  document.querySelectorAll('.auth-tab')[role === 'admin' ? 0 : 1].classList.add('active');
+  qs('#login-email').value = role === 'admin' ? 'keshavpurohit@gmail.com' : 'arjun@pvclasses.in';
+  qs('#login-pass').value = role === 'admin' ? 'admin123' : 'student123';
+}
+switchRole('admin');
+
+async function doLogin() {
+  const email = qs('#login-email').value.trim();
+  const pass = qs('#login-pass').value;
+  const err = qs('#login-err');
+  const btn = qs('#login-btn');
+  if (!email || !pass) { err.style.display = 'block'; err.textContent = 'Please fill all fields'; return; }
+  btn.textContent = 'Signing in…'; btn.disabled = true;
+  try {
+    const data = await api('/auth/login', { method: 'POST', body: { email, password: pass } });
+    if (!data) return;
+    TOKEN = data.token;
+    ME = data.user;
+    localStorage.setItem('pv_token', TOKEN);
+    localStorage.setItem('pv_me', JSON.stringify(ME));
+    initApp();
+  } catch (e) {
+    err.style.display = 'block'; err.textContent = e.message;
+  } finally { btn.textContent = 'Sign In →'; btn.disabled = false; }
+}
+qs('#login-pass').addEventListener('keydown', e => e.key === 'Enter' && doLogin());
+
+function logout() {
+  TOKEN = ''; ME = null;
+  localStorage.removeItem('pv_token'); localStorage.removeItem('pv_me');
+  qs('#app-shell').classList.remove('active');
+  qs('#auth-screen').style.display = 'flex';
+  switchRole('admin');
+}
+function showLogoutConfirm() {
+  openModal('Sign Out', `<p style="color:var(--tx2)">Are you sure you want to sign out of PV Classes ERP?</p>`,
+    [{label:'Cancel',cls:'btn-ghost',fn:'closeModal()'},{label:'Sign Out',cls:'btn-red',fn:'logout()'}]);
+}
+
+// ─── App Init ──────────────────────────────────────────────────────────────────
+function initApp() {
+  qs('#auth-screen').style.display = 'none';
+  qs('#app-shell').classList.add('active');
+  qs('#nav-name').textContent = ME.name;
+  qs('#nav-role').textContent = ME.role === 'admin' ? 'Administrator' : 'Student';
+  qs('#nav-avatar').textContent = initials(ME.name);
+  buildNav();
+  navigate(ME.role === 'admin' ? 'dashboard' : 'portal');
+}
+
+// Check existing session
+if (TOKEN && ME) initApp();
+
+// ─── Navigation ──────────────────────────────────────────────────────────────
+const ADMIN_NAV = [
+  { section: 'Overview' },
+  { id: 'dashboard', icon: '⊞', label: 'Dashboard' },
+  { section: 'Academics' },
+  { id: 'students', icon: '👥', label: 'Students' },
+  { id: 'courses', icon: '📋', label: 'Courses' },
+  { id: 'faculty', icon: '👨‍🏫', label: 'Faculty' },
+  { id: 'attendance', icon: '✅', label: 'Attendance' },
+  { section: 'Finance' },
+  { id: 'fees', icon: '💰', label: 'Fees' },
+  { section: 'Results & Content' },
+  { id: 'results', icon: '📊', label: 'Results' },
+  { id: 'notices', icon: '📢', label: 'Notices' },
+  { id: 'notes', icon: '📁', label: 'Study Notes' },
+  { id: 'timetable', icon: '🗓', label: 'Timetable' },
+  { section: 'Communication' },
+  { id: 'whatsapp', icon: '💬', label: 'WhatsApp' },
+  { id: 'reports', icon: '📈', label: 'Reports' },
+  { section: 'System' },
+  { id: 'settings', icon: '⚙️', label: 'Settings' },
+];
+const STUDENT_NAV = [
+  { section: 'My Portal' },
+  { id: 'portal', icon: '🏠', label: 'My Dashboard' },
+  { id: 'notices', icon: '📢', label: 'Notices' },
+  { id: 'notes', icon: '📁', label: 'Study Notes' },
+  { section: 'Account' },
+  { id: 'settings', icon: '⚙️', label: 'Settings' },
+];
+
+function buildNav() {
+  const nav = qs('#sidebar-nav');
+  const items = ME.role === 'admin' ? ADMIN_NAV : STUDENT_NAV;
+  nav.innerHTML = items.map(item => {
+    if (item.section) return `<div class="nav-section-label">${item.section}</div>`;
+    return `<div class="nav-item" id="nav-${item.id}" onclick="navigate('${item.id}')">
+      <span class="nav-icon">${item.icon}</span>
+      <span>${item.label}</span>
+    </div>`;
+  }).join('');
+}
+
+function navigate(page) {
+  if (currentPage) {
+    const prev = qs(`#nav-${currentPage}`);
+    if (prev) prev.classList.remove('active');
+  }
+  currentPage = page;
+  const cur = qs(`#nav-${page}`);
+  if (cur) cur.classList.add('active');
+  const titles = {
+    dashboard:'Dashboard', students:'Students', courses:'Courses', faculty:'Faculty',
+    attendance:'Attendance', fees:'Fees', results:'Results', notices:'Notices',
+    notes:'Study Notes', timetable:'Timetable', whatsapp:'WhatsApp Messaging',
+    reports:'Reports & Analytics', settings:'Settings', portal:'Student Portal'
+  };
+  qs('#topbar-title').textContent = titles[page] || page;
+  const content = qs('#page-content');
+  content.innerHTML = '<div class="loading-spinner"></div>';
+  const fn = pages[page];
+  if (fn) fn();
+  else content.innerHTML = '<div class="empty-state"><div class="empty-icon">🚧</div><div class="empty-text">Coming Soon</div></div>';
+}
+
+function refreshPage() { navigate(currentPage); }
+function globalSearch(v) { if (v.length > 1 && currentPage === 'students') loadStudents(v); }
+
+// ─── Modal helper ─────────────────────────────────────────────────────────────
+function openModal(title, body, actions = []) {
+  qs('#modal-title').textContent = title;
+  qs('#modal-body').innerHTML = body;
+  qs('#modal-footer').innerHTML = actions.map(a =>
+    `<button class="btn ${a.cls}" onclick="${a.fn}">${a.label}</button>`
+  ).join('');
+  qs('#modal').classList.add('open');
+}
+function closeModal(e) {
+  if (!e || e.target === qs('#modal')) qs('#modal').classList.remove('open');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGES
+// ─────────────────────────────────────────────────────────────────────────────
+const pages = {};
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+pages.dashboard = async function() {
+  const c = qs('#page-content');
+  try {
+    const d = await api('/dashboard');
+    if (!d) return;
+    const s = d.stats;
+    const feesPct = pct(s.collectedFees, s.totalFees);
+    const recent = d.recentStudents || [];
+    c.innerHTML = `
+    <div class="page-header dashboard-card card-1">
+      <div><div class="page-title">Good ${greeting()}, ${ME.name.split(' ')[0]} 👋</div>
+      <div class="page-sub">${new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div></div>
+      <button class="btn btn-blue btn-sm" onclick="navigate('students')">➕ Add Student</button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card dashboard-card card-1">
+        <div class="stat-card-header">
+          <div class="stat-icon" style="background:rgba(67,97,238,.1)">👥</div>
+          <span class="stat-trend up">↑ Active</span>
+        </div>
+        <div class="stat-value">${s.totalStudents}</div>
+        <div class="stat-label">Total Students</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:${Math.min(100,s.totalStudents/100*100)}%;background:var(--p)"></div></div>
+      </div>
+      <div class="stat-card dashboard-card card-2">
+        <div class="stat-card-header">
+          <div class="stat-icon" style="background:rgba(16,185,129,.1)">📋</div>
+          <span class="stat-trend up">↑ Running</span>
+        </div>
+        <div class="stat-value">${s.totalCourses}</div>
+        <div class="stat-label">Active Courses</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:${s.totalCourses*20}%;background:var(--ok)"></div></div>
+      </div>
+      <div class="stat-card dashboard-card card-3">
+        <div class="stat-card-header">
+          <div class="stat-icon" style="background:rgba(245,158,11,.1)">💰</div>
+          <span class="stat-trend" style="color:var(--warn)">${feesPct}% paid</span>
+        </div>
+        <div class="stat-value" style="font-size:20px">${fmt(s.collectedFees)}</div>
+        <div class="stat-label">Fee Collected</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:${feesPct}%;background:var(--warn)"></div></div>
+      </div>
+      <div class="stat-card dashboard-card card-4">
+        <div class="stat-card-header">
+          <div class="stat-icon" style="background:rgba(${s.attendanceRate>=75?'16,185,129':'239,68,68'},.1)">${s.attendanceRate>=75?'✅':'⚠️'}</div>
+          <span class="stat-trend ${s.attendanceRate>=75?'up':'down'}">${s.attendanceRate>=75?'↑ Good':'↓ Low'}</span>
+        </div>
+        <div class="stat-value">${s.attendanceRate}%</div>
+        <div class="stat-label">Avg Attendance</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:${s.attendanceRate}%;background:${s.attendanceRate>=75?'var(--ok)':'var(--err)'}"></div></div>
+      </div>
+      <div class="stat-card dashboard-card card-5">
+        <div class="stat-card-header">
+          <div class="stat-icon" style="background:rgba(239,68,68,.1)">⚠️</div>
+          <span class="stat-trend down">Pending</span>
+        </div>
+        <div class="stat-value" style="font-size:20px;color:var(--err)">${fmt(s.pendingFees)}</div>
+        <div class="stat-label">Fees Pending</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:${100-feesPct}%;background:var(--err)"></div></div>
+      </div>
+      <div class="stat-card dashboard-card card-6" style="cursor:pointer" onclick="navigate('fees')">
+        <div class="stat-card-header">
+          <div class="stat-icon" style="background:rgba(124,58,237,.1)">📈</div>
+          <span class="stat-trend up">View →</span>
+        </div>
+        <div class="stat-value" style="font-size:20px">${fmt(s.totalFees)}</div>
+        <div class="stat-label">Total Fees Billed</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:100%;background:var(--acc)"></div></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:18px">
+      <div class="table-card dashboard-card card-1">
+        <div class="table-toolbar">
+          <span class="table-title">Recent Admissions</span>
+          <button class="btn btn-ghost btn-sm" onclick="navigate('students')">View All →</button>
+        </div>
+        <table>
+          <thead><tr><th>Student</th><th>Course</th><th>Enrolled</th></tr></thead>
+          <tbody>
+            ${recent.length ? recent.map(s => `
+              <tr>
+                <td><div style="display:flex;align-items:center;gap:8px">
+                  <div class="avatar sm">${initials(s.name)}</div>
+                  <div><div style="font-weight:600">${s.name}</div><div style="font-size:11px;color:var(--tx3)">${s.enrollment_no||''}</div></div>
+                </div></td>
+                <td>${s.course||'—'}</td>
+                <td style="font-size:12px;color:var(--tx3)">${fmtDate(s.joined_at)}</td>
+              </tr>`).join('') :
+              '<tr><td colspan="3" class="table-empty">No recent students</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+      <div class="content-card dashboard-card card-2" style="padding:20px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:16px">Quick Actions</div>
+        ${[
+          ['➕ Add Student','blue','students'],
+          ['💳 Collect Fee','blue','fees'],
+          ['📢 Post Notice','blue','notices'],
+          ['📊 View Reports','blue','reports'],
+        ].map(([l,c,p]) => `<button class="btn btn-ghost" style="width:100%;margin-bottom:8px;justify-content:flex-start" onclick="navigate('${p}')">${l}</button>`).join('')}
+      </div>
+    </div>`;
+  } catch (e) {
+    c.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">${e.message}</div></div>`;
+  }
+};
+function greeting() {
+  const h = new Date().getHours();
+  return h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+}
+
+// ── STUDENTS ──────────────────────────────────────────────────────────────────
+let studentsCache = [];
+pages.students = async function() { loadStudents(); };
+async function loadStudents(q = '') {
+  const c = qs('#page-content');
+  c.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    const data = await api('/students' + (q ? '?q=' + encodeURIComponent(q) : ''));
+    studentsCache = data || [];
+    c.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">Students</div><div class="page-sub">${data.length} total records</div></div>
+      <button class="btn btn-blue" onclick="showAddStudent()">➕ Add Student</button>
+    </div>
+    <div class="table-card">
+      <div class="table-toolbar">
+        <span class="table-title">All Students</span>
+        <div class="table-search"><span style="color:var(--tx3)">🔍</span>
+          <input placeholder="Search by name, ID..." oninput="loadStudents(this.value)" value="${q}"/>
+        </div>
+      </div>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>Student</th><th>Course</th><th>Batch</th><th>Fee Status</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${data.length ? data.map(s => {
+            const fp = pct(s.paid_fee, s.total_fee);
+            return `<tr>
+              <td><div style="display:flex;align-items:center;gap:10px">
+                <div class="avatar sm">${initials(s.name)}</div>
+                <div><div style="font-weight:600">${s.name}</div>
+                <div style="font-size:11px;color:var(--tx3)">${s.enrollment_no} • ${s.email}</div></div>
+              </div></td>
+              <td>${s.course_code || '—'}</td>
+              <td><span class="badge badge-blue">${s.batch}</span></td>
+              <td><div style="min-width:120px">
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+                  <span>${fmt(s.paid_fee)}</span><span style="color:var(--tx3)">${fp}%</span>
+                </div>
+                <div class="progress"><div class="progress-fill ${pctColor(fp)}" style="width:${fp}%"></div></div>
+              </div></td>
+              <td><span class="badge ${badgeType(s.status)}">${s.status}</span></td>
+              <td><div style="display:flex;gap:6px">
+                <button class="btn btn-ghost btn-sm" onclick="showFeeModal(${s.id},'${s.name}')">💳 Fee</button>
+                <button class="btn btn-ghost btn-sm" onclick="editStudent(${s.id})">✏️</button>
+                <button class="btn btn-red btn-sm" onclick="deleteStudent(${s.id})">🗑</button>
+              </div></td>
+            </tr>`;
+          }).join('') : '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">No students found</div></div></td></tr>'}
+        </tbody>
+      </table>
+      </div>
+      <div class="table-pagination">
+        <span>${data.length} records</span>
+      </div>
+    </div>`;
+  } catch(e) { toast(e.message,'err'); }
+}
+function showAddStudent() {
+  openModal('Add New Student', `
+    <div class="form-row"><div class="form-group"><label class="form-label">Full Name</label>
+      <input class="form-input" id="s-name" placeholder="Student Name"/></div>
+    <div class="form-group"><label class="form-label">Email</label>
+      <input class="form-input" id="s-email" type="email" placeholder="student@pvclasses.in"/></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Phone</label>
+      <input class="form-input" id="s-phone" placeholder="9xxxxxxxxx"/></div>
+    <div class="form-group"><label class="form-label">Course</label>
+      <select class="form-select" id="s-course"><option value="">Select Course</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Batch</label>
+      <input class="form-input" id="s-batch" placeholder="Batch A"/></div>
+    <div class="form-group"><label class="form-label">Total Fee (₹)</label>
+      <input class="form-input" id="s-fee" type="number" placeholder="45000"/></div></div>`,
+    [{label:'Cancel',cls:'btn-ghost',fn:'closeModal()'},{label:'Add Student',cls:'btn-blue',fn:'submitAddStudent()'}]
+  );
+  api('/courses').then(courses => {
+    const sel = qs('#s-course');
+    courses.forEach(c => sel.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+  });
+}
+async function submitAddStudent() {
+  const body = {
+    name: qs('#s-name').value, email: qs('#s-email').value, phone: qs('#s-phone').value,
+    course_id: qs('#s-course').value, batch: qs('#s-batch').value || 'Batch A',
+    total_fee: Number(qs('#s-fee').value)
+  };
+  if (!body.name || !body.email || !body.course_id) { toast('Fill required fields','err'); return; }
+  try {
+    await api('/students', { method: 'POST', body });
+    closeModal(); toast('Student added!','ok'); loadStudents();
+  } catch(e) { toast(e.message,'err'); }
+}
+async function editStudent(id) {
+  const s = studentsCache.find(x => x.id === id);
+  if (!s) return;
+  openModal('Edit Student', `
+    <div class="form-group"><label class="form-label">Status</label>
+      <select class="form-select" id="es-status">
+        ${['active','inactive','passed'].map(v => `<option value="${v}" ${s.status===v?'selected':''}>${v}</option>`).join('')}
+      </select></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Total Fee (₹)</label>
+      <input class="form-input" id="es-fee" type="number" value="${s.total_fee}"/></div>
+    <div class="form-group"><label class="form-label">Batch</label>
+      <input class="form-input" id="es-batch" value="${s.batch}"/></div></div>`,
+    [{label:'Cancel',cls:'btn-ghost',fn:'closeModal()'},
+     {label:'Save',cls:'btn-blue',fn:`saveStudent(${id})`}]
+  );
+  window._editStu = s;
+}
+async function saveStudent(id) {
+  const s = window._editStu;
+  try {
+    await api('/students/' + id, { method: 'PUT', body: {
+      ...s, status: qs('#es-status').value,
+      total_fee: Number(qs('#es-fee').value), batch: qs('#es-batch').value
+    }});
+    closeModal(); toast('Updated!','ok'); loadStudents();
+  } catch(e) { toast(e.message,'err'); }
+}
+async function deleteStudent(id) {
+  openModal('Delete Student', '<p style="color:var(--tx2)">This will permanently delete the student record.</p>',
+    [{label:'Cancel',cls:'btn-ghost',fn:'closeModal()'},
+     {label:'Delete',cls:'btn-red',fn:`confirmDeleteStudent(${id})`}]);
+}
+async function confirmDeleteStudent(id) {
+  try { await api('/students/' + id, {method:'DELETE'}); closeModal(); toast('Deleted','ok'); loadStudents(); }
+  catch(e) { toast(e.message,'err'); }
+}
+function showFeeModal(studentId, name) {
+  openModal(`Collect Fee — ${name}`, `
+    <div class="form-group"><label class="form-label">Amount (₹)</label>
+      <input class="form-input" id="f-amt" type="number" placeholder="5000"/></div>
+    <div class="form-group"><label class="form-label">Payment Mode</label>
+      <select class="form-select" id="f-mode">
+        <option value="cash">Cash</option><option value="upi">UPI</option>
+        <option value="bank">Bank Transfer</option><option value="card">Card</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Note (optional)</label>
+      <input class="form-input" id="f-note" placeholder="Installment 2"/></div>`,
+    [{label:'Cancel',cls:'btn-ghost',fn:'closeModal()'},
+     {label:'Collect',cls:'btn-blue',fn:`submitFee(${studentId})`}]
+  );
+}
+async function submitFee(id) {
+  const amt = Number(qs('#f-amt').value);
+  if (!amt) { toast('Enter amount','err'); return; }
+  try {
+    await api('/fees', {method:'POST', body:{student_id:id, amount:amt, mode:qs('#f-mode').value, note:qs('#f-note').value}});
+    closeModal(); toast('Fee collected! Receipt generated.','ok'); loadStudents();
+  } catch(e) { toast(e.message,'err'); }
+}
+
+// ── COURSES ───────────────────────────────────────────────────────────────────
+pages.courses = async function() {
+  const c = qs('#page-content');
+  c.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    const data = await api('/courses');
+    c.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">Courses</div><div class="page-sub">${data.length} courses available</div></div>
+      <button class="btn btn-blue" onclick="showAddCourse()">➕ New Course</button>
+    </div>
+    <div class="card-grid">
+      ${data.map((course, i) => {
+        const fp = pct(course.enrolled, course.seats);
+        return `<div class="content-card dashboard-card card-${(i%6)+1}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+            <div>
+              <div style="font-size:16px;font-weight:700">${course.name}</div>
+              <span class="badge badge-blue" style="margin-top:6px">${course.code}</span>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-ghost btn-sm" onclick="deleteCourse(${course.id})">🗑</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+            <div style="background:var(--surf2);border-radius:8px;padding:10px;text-align:center">
+              <div style="font-size:18px;font-weight:800;color:var(--p)">${course.enrolled}</div>
+              <div style="font-size:11px;color:var(--tx3)">Enrolled</div>
+            </div>
+            <div style="background:var(--surf2);border-radius:8px;padding:10px;text-align:center">
+              <div style="font-size:18px;font-weight:800">${course.seats}</div>
+              <div style="font-size:11px;color:var(--tx3)">Seats</div>
+            </div>
+          </div>
+          <div style="margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;color:var(--tx3)">
+              <span>Fill rate</span><span>${fp}%</span>
+            </div>
+            <div class="progress"><div class="progress-fill ${pctColor(fp)}" style="width:${fp}%"></div></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:14px;font-size:13px">
+            <span style="color:var(--tx2)">⏱ ${course.duration}</span>
+            <span style="font-weight:700;color:var(--p)">${fmt(course.fee)}</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  } catch(e) { toast(e.message,'err'); }
+};
+function showAddCourse() {
+  openModal('Add New Course', `
+    <div class="form-row"><div class="form-group"><label class="form-label">Course Name</label>
+      <input class="form-input" id="c-name" placeholder="NEET 2025"/></div>
+    <div class="form-group"><label class="form-label">Course Code</label>
+      <input class="form-input" id="c-code" placeholder="NEET-25"/></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Duration</label>
+      <input class="form-input" id="c-dur" placeholder="12 months"/></div>
+    <div class="form-group"><label class="form-label">Fee (₹)</label>
+      <input class="form-input" id="c-fee" type="number" placeholder="45000"/></div></div>
+    <div class="form-group"><label class="form-label">Total Seats</label>
+      <input class="form-input" id="c-seats" type="number" placeholder="60"/></div>`,
+    [{label:'Cancel',cls:'btn-ghost',fn:'closeModal()'},{label:'Add Course',cls:'btn-blue',fn:'submitAddCourse()'}]
+  );
+}
+async function submitAddCourse() {
+  try {
+    await api('/courses',{method:'POST',body:{
+      name:qs('#c-name').value, code:qs('#c-code').value, duration:qs('#c-dur').value,
+      fee:Number(qs('#c-fee').value), seats:Number(qs('#c-seats').value)||50
+    }});
+    closeModal(); toast('Course added!','ok'); pages.courses();
+  } catch(e) { toast(e.message,'err'); }
+}
+async function deleteCourse(id) {
+  if (!confirm('Delete this course?')) return;
+  try { await api('/courses/'+id,{method:'DELETE'}); toast('Deleted','ok'); pages.courses(); }
+  catch(e) { toast(e.message,'err'); }
+}
+
+// ── FACULTY ───────────────────────────────────────────────────────────────────
+pages.faculty = async function() {
+  const c = qs('#page-content');
+  c.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    const data = await api('/faculty');
+    c.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">Faculty</div><div class="page-sub">${data.length} members</div></div>
+      <button class="btn btn-blue" onclick="showAddFaculty()">➕ Add Faculty</button>
+    </div>
+    <div class="card-grid">
+      ${data.map((f,i) => `
+        <div class="content-card dashboard-card card-${(i%4)+1}">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+            <div class="avatar lg" style="background:linear-gradient(135deg,${['#4361ee,#7c3aed','#10b981,#059669','#f59e0b,#d97706','#ef4444,#dc2626'][i%4]})">${initials(f.name)}</div>
+            <div>
+              <div style="font-size:15px;font-weight:700">${f.name}</div>
+              <div style="font-size:12px;color:var(--tx2)">${f.qualification||'Faculty'}</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span>📚</span><span>${f.subject}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2)">
+              <span>📧</span><span>${f.email}</span>
+            </div>
+            ${f.phone ? `<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2)">
+              <span>📞</span><span>${f.phone}</span>
+            </div>` : ''}
+          </div>
+          <div style="display:flex;gap:6px;margin-top:14px">
+            <button class="btn btn-ghost btn-sm" style="flex:1" onclick="deleteFaculty(${f.id})">Remove</button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  } catch(e) { toast(e.message,'err'); }
+};
+function showAddFaculty() {
+  openModal('Add Faculty', `
+    <div class="form-row"><div class="form-group"><label class="form-label">Name</label>
+      <input class="form-input" id="f-name" placeholder="Dr. Name"/></div>
+    <div class="form-group"><label class="form-label">Subject</label>
+      <input class="form-input" id="f-subj" placeholder="Physics"/></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Email</label>
+      <input class="form-input" id="f-email" type="email"/></div>
+    <div class="form-group"><label class="form-label">Phone</label>
+      <input class="form-input" id="f-phone" placeholder="9xxxxxxxx"/></div></div>
+    <div class="form-group"><label class="form-label">Qualification</label>
+      <input class="form-input" id="f-qual" placeholder="PhD Physics"/></div>`,
+    [{label:'Cancel',cls:'btn-ghost',fn:'closeModal()'},{label:'Add',cls:'btn-blue',fn:'submitFaculty()'}]
+  );
+}
+async function submitFaculty() {
+  try {
+    await api('/faculty',{method:'POST',body:{
+      name:qs('#f-name').value, subject:qs('#f-subj').value,
+      email:qs('#f-email').value, phone:qs('#f-phone').value, qualification:qs('#f-qual').value
+    }});
+    closeModal(); toast('Faculty added!','ok'); pages.faculty();
+  } catch(e) { toast(e.message,'err'); }
+}
+async function deleteFaculty(id) {
+  if(!confirm('Remove this faculty member?')) return;
+  try { await api('/faculty/'+id,{method:'DELETE'}); toast('Removed','ok'); pages.faculty(); }
+  catch(e) { toast(e.message,'err'); }
+}
+
+// ── ATTENDANCE ────────────────────────────────────────────────────────────────
+pages.attendance = async function() {
+  const c = qs('#page-content');
+  c.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    const data = await api('/attendance');
+    const summary = data.summary || [];
+    c.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">Attendance</div><div class="page-sub">Track student presence</div></div>
+      <button class="btn btn-blue" onclick="showMarkAttendance()">✅ Mark Today</button>
+    </div>
+    <div class="table-card">
+      <div class="table-toolbar"><span class="table-title">Attendance Summary by Student</span></div>
+      <table>
+        <thead><tr><th>Student</th><th>Present</th><th>Absent</th><th>Late</th><th>Total</th><th>Attendance %</th></tr></thead>
+        <tbody>
+          ${summary.length ? summary.map(s => {
+            const p = pct(s.present, s.total);
+            return `<tr>
+              <td style="font-weight:500">#${s.student_id}</td>
+              <td><span class="badge badge-green">${s.present}</span></td>
+              <td><span class="badge badge-red">${s.absent}</span></td>
+              <td><span class="badge badge-yellow">${s.late}</span></td>
+              <td>${s.total}</td>
+              <td><div style="display:flex;align-items:center;gap:10px;min-width:140px">
+                <div class="progress" style="flex:1"><div class="progress-fill ${pctColor(p)}" style="width:${p}%"></div></div>
+                <span style="font-size:12px;font-weight:600;color:${p<75?'var(--err)':'var(--tx)'}">${p}%</span>
+              </div></td>
+            </tr>`;
+          }).join('') : '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">No records yet</div></div></td></tr>'}
+        </tbody>
+      </table>
+    </div>`;
+  } catch(e) { toast(e.message,'err'); }
+};
+async function showMarkAttendance() {
+  const students = await api('/students');
+  const today = new Date().toISOString().split('T')[0];
+  openModal('Mark Attendance — Today', `
+    <div class="form-group"><label class="form-label">Date</label>
+      <input class="form-input" id="att-date" type="date" value="${today}"/></div>
+    <div class="form-group"><label class="form-label">Subject</label>
+      <input class="form-input" id="att-subj" placeholder="Physics"/></div>
+    <div style="max-height:240px;overflow-y:auto;margin-top:12px">
+      ${students.slice(0,10).map(s => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span style="font-weight:500">${s.name}</span>
+          <select class="form-select" id="att-${s.id}" style="width:120px">
+            <option value="present">Present</option>
+            <option value="absent">Absent</option>
+            <option value="late">Late</option>
+          </select>
+        </div>`).join('')}
+    </div>`,
+    [{label:'Cancel',cls:'btn-ghost',fn:'closeModal()'},
+     {label:'Save',cls:'btn-blue',fn:`submitAttendance([${students.slice(0,10).map(s=>s.id)}])`}]
+  );
+}
+async function submitAttendance(ids) {
+  const date = qs('#att-date').value;
+  const subj = qs('#att-subj').value;
+  const records = ids.map(id => ({student_id:id, date, status:qs(`#att-${id}`)?.value||'present', subject:subj}));
+  try {
+    await api('/attendance',{method:'POST',body:{records}});
+    closeModal(); toast(`Marked attendance for ${ids.length} students`,'ok'); pages.attendance();
+  } catch(e) { toast(e.message,'err'); }
+}
+
+// ── FEES ──────────────────────────────────────────────────────────────────────
+pages.fees = async function() {
+  const c = qs('#page-content');
+  c.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    const data = await api('/fees');
+    const summary = data.summary || [];
+    const payments = data.payments || [];
+    const totalCollected = payments.reduce((s,p) => s+p.amount, 0);
+    c.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">Fee Management</div><div class="page-sub">${payments.length} transactions</div></div>
+    </div>
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px">
+      <div class="stat-card dashboard-card card-1">
+        <div class="stat-icon" style="background:rgba(16,185,129,.1);margin-bottom:10px">💚</div>
+        <div class="stat-value" style="font-size:20px">${fmt(totalCollected)}</div>
+        <div class="stat-label">Total Collected</div>
+      </div>
+      <div class="stat-card dashboard-card card-2">
+        <div class="stat-icon" style="background:rgba(239,68,68,.1);margin-bottom:10px">⚠️</div>
+        <div class="stat-value" style="font-size:20px;color:var(--err)">${fmt(summary.reduce((s,r)=>s+(r.pending||0),0))}</div>
+        <div class="stat-label">Total Pending</div>
+      </div>
+      <div class="stat-card dashboard-card card-3">
+        <div class="stat-icon" style="background:rgba(67,97,238,.1);margin-bottom:10px">📋</div>
+        <div class="stat-value">${payments.length}</div>
+        <div class="stat-label">Transactions</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:18px">
+      <div class="table-card dashboard-card card-1">
+        <div class="table-toolbar"><span class="table-title">Fee Summary by Student</span></div>
+        <table>
+          <thead><tr><th>Student</th><th>Course</th><th>Total</th><th>Paid</th><th>Pending</th><th>Action</th></tr></thead>
+          <tbody>
+            ${summary.map(s => `<tr>
+              <td style="font-weight:600">${s.name}<div style="font-size:11px;color:var(--tx3)">${s.enrollment_no}</div></td>
+              <td><span class="badge badge-blue">${s.course_name||'—'}</span></td>
+              <td>${fmt(s.total_fee)}</td>
+              <td style="color:var(--ok);font-weight:600">${fmt(s.paid_fee)}</td>
+              <td style="color:${s.pending>0?'var(--err)':'var(--ok)'};font-weight:600">${fmt(s.pending)}</td>
+              <td><button class="btn btn-green btn-sm" onclick="showFeeModal(${s.id},'${s.name}')">Collect</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="table-card dashboard-card card-2">
+        <div class="table-toolbar"><span class="table-title">Recent Transactions</span></div>
+        <div style="padding:0 4px">
+          ${payments.slice(0,8).map(p => `
+            <div class="fee-item">
+              <div class="fee-icon">💳</div>
+              <div class="fee-info">
+                <div class="fee-name">${p.student_name||'Student'}</div>
+                <div class="fee-date">${p.receipt_no} • ${p.mode} • ${fmtDate(p.paid_at)}</div>
+              </div>
+              <div class="fee-amount">${fmt(p.amount)}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  } catch(e) { toast(e.message,'err'); }
+};
+
+// ── RESULTS ───────────────────────────────────────────────────────────────────
+pages.results = async function() {
+  const c = qs('#page-content');
+  c.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    const data = await api('/results');
+    c.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">Results</div><div class="page-sub">${data.length} records</div></div>
+      <button class="btn btn-blue" onclick="showAddResult()">➕ Add Result</button>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead><tr><th>Student</th><th>Subject</th><th>Exam</th><th>Marks</th><th>Score</th></tr></thead>
+        <tbody>
+          ${data.map(r => {
+            const p = pct(r.marks, r.max_marks);
+            return `<tr>
+              <td style="font-weight:600">${r.student_name||'—'}</td>
+              <td>${r.subject}</td>
+              <td><span class="badge badge-purple">${r.exam_type}</span></td>
+              <td>${r.marks}/${r.max_marks}</td>
+              <td><div style="display:flex;align-items:center;gap:8px;min-width:100px">
+                <div class="progress" style="flex:1"><div class="progress-fill ${pctColor(p)}" style="width:${p}%"></div></div>
+                <span style="font-size:12px;font-weight:700;color:${p>=75?'var(--ok)':p>=50?'var(--warn)':'var(--err)'}">${p}%</span>
+              </div></td>
+            </tr>`;
+          }).join('') || '<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">No results yet</div></div></td></tr>'}
+        </tbody>
+      </table>
+    </div>`;
+  } catch(e) { toast(e.message,'err'); }
+};
+async function showAddResult() {
+  const [students, ] = await Promise.all([api('/students')]);
+  openModal('Add Result', `
+    <div class="form-group"><label class="form-label">Student</label>
+      <select class="form-select" id="r-stu">${students.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Subject</label>
+      <input class="form-input" id="r-subj" placeholder="Physics"/></div>
+    <div class="form-group"><label class="form-label">Exam Type</label>
+      <input class="form-input" id="r-type" placeholder="Unit Test 1"/></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Marks Obtained</label>
+      <input class="form-input" id="r-marks" type="number"/></div>
+    <div class="form-group"><label class="form-label">Max Marks</label>
+      <input class="form-input" id="r-max" type="number" value="100"/></div></div>`,
+    [{label:'Cancel',cls:'btn-ghost',fn:'closeModal()'},{label:'Add',cls:'btn-blue',fn:'submitResult()'}]
+  );
+}
+async function submitResult() {
+  try {
+    await api('/results',{method:'POST',body:{
+      student_id:qs('#r-stu').value, subject:qs('#r-subj').value,
+      exam_type:qs('#r-type').value, marks:Number(qs('#r-marks').value), max_marks:Number(qs('#r-max').value)
+    }});
+    closeModal(); toast('Result added!','ok'); pages.results();
+  } catch(e) { toast(e.message,'err'); }
+}
+
+// ── NOTICES ───────────────────────────────────────────────────────────────────
+pages.notices = async function() {
+  const c = qs('#page-content');
+  c.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    const data = await api('/notices');
+    const colors = {urgent:'#ef4444',exam:'#f59e0b',holiday:'#7c3aed',general:'#4361ee'};
+    c.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">Notices</div><div class="page-sub">${data.length} notices posted</div></div>
+      ${ME.role==='admin'?`<button class="btn btn-blue" onclick="showAddNotice()">📢 Post Notice</button>`:''}
+    </div>
+    <div style="max-width:700px">
+      ${data.map(n => `
+        <div class="notice-item dashboard-card card-1">
+          <div class="notice-accent" style="background:${colors[n.type]||'#4361ee'}"></div>
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+              <span style="font-size:15px;font-weight:700">${n.title}</span>
+              <span class="badge ${badgeType(n.type)}">${n.type}</span>
+            </div>
+            <p style="color:var(--tx2);font-size:13px;line-height:1.6">${n.body}</p>
+            <div style="font-size:11px;color:var(--tx3);margin-top:8px">${fmtDate(n.created_at)}</div>
+          </div>
+          ${ME.role==='admin'?`<button class="btn btn-red btn-sm" onclick="deleteNotice(${n.id})">🗑</button>`:''}
+        </div>`).join('') || '<div class="empty-state"><div class="empty-icon">📢</div><div class="empty-text">No notices</div></div>'}
+    </div>`;
+  } catch(e) { toast(e.message,'err'); }
+};
+function showAddNotice() {
+  openModal('Post Notice', `
+    <div class="form-group"><label class="form-label">Title</label>
+      <input class="form-input" id="n-title" placeholder="Notice title"/></div>
+    <div class="form-group"><label class="form-label">Message</label>
+      <textarea class="form-textarea" id="n-body" placeholder="Notice details…"></textarea></div>
+    <div class="form-group"><label class="form-label">Type</label>
+      <select class="form-select" id="n-type">
+        <option value="general">General</option><option value="urgent">Urgent</option>
+        <option value="exam">Exam</option><option value="holiday">Holiday</option>
+      </select></div>`,
+    [{label:'Cancel',cls:'btn-ghost',fn:'closeModal()'},{label:'Post',cls:'btn-blue',fn:'submitNotice()'}]
+  );
+}
+async function submitNotice() {
+  try {
+    await api('/notices',{method:'POST',body:{title:qs('#n-title').value,body:qs('#n-body').value,type:qs('#n-type').value}});
+    closeModal(); toast('Notice posted!','ok'); pages.notices();
+  } catch(e) { toast(e.message,'err'); }
+}
+async function deleteNotice(id) {
+  try { await api('/notices/'+id,{method:'DELETE'}); toast('Deleted','ok'); pages.notices(); }
+  catch(e) { toast(e.message,'err'); }
+}
+
+// ── NOTES ─────────────────────────────────────────────────────────────────────
+pages.notes = async function() {
+  const c = qs('#page-content');
+  c.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    const data = await api('/notes');
+    c.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">Study Notes</div><div class="page-sub">${data.length} files available</div></div>
+      ${ME.role==='admin'?`<button class="btn btn-blue" onclick="showAddNote()">➕ Upload Note</button>`:''}
+    </div>
+    <div class="card-grid">
+      ${data.map((n,i) => `
+        <div class="content-card dashboard-card card-${(i%4)+1}">
+          <div style="font-size:32px;margin-bottom:12px">📄</div>
+          <div style="font-size:15px;font-weight:700;margin-bottom:6px">${n.title}</div>
+          <div style="margin-bottom:12px">
+            <span class="badge badge-purple">${n.subject}</span>
+            ${n.course_name?`<span class="badge badge-blue" style="margin-left:6px">${n.course_name}</span>`:''}
+          </div>
+          <p style="font-size:12px;color:var(--tx2);margin-bottom:14px">${n.description||'Study material'}</p>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:11px;color:var(--tx3)">${fmtDate(n.created_at)}</span>
+            <div style="display:flex;gap:6px">
+              ${n.file_url?`<a href="${n.file_url}" class="btn btn-blue btn-sm" target="_blank">⬇ Download</a>`:''}
+              ${ME.role==='admin'?`<button class="btn btn-red btn-sm" onclick="deleteNote(${n.id})">🗑</button>`:''}
+            </div>
+          </div>
+        </div>`).join('') || '<div class="empty-state"><div class="empty-icon">📁</div><div class="empty-text">No notes uploaded</div></div>'}
+    </div>`;
+  } catch(e) { toast(e.message,'err'); }
+};
+function showAddNote() {
+  openModal('Upload Study Note', `
+    <div class="form-group"><label class="form-label">Title</label>
+      <input class="form-input" id="nt-title" placeholder="Physics Chapter 1 Notes"/></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Subject</label>
+      <input class="form-input" id="nt-subj" placeholder="Physics"/></div>
+    <div class="form-group"><label class="form-label">Course</label>
+      <select class="form-select" id="nt-course"><option value="">All Courses</option></select></div></div>
+    <div class="form-group"><label class="form-label">File URL (Google Drive/Dropbox)</label>
+      <input class="form-input" id="nt-url" placeholder="https://drive.google.com/..."/></div>
+    <div class="form-group"><label class="form-label">Description</label>
+      <textarea class="form-textarea" id="nt-desc" placeholder="Brief description..."></textarea></div>`,
+    [{label:'Cancel',cls:'btn-ghost',fn:'closeModal()'},{label:'Upload',cls:'btn-blue',fn:'submitNote()'}]
+  );
+  api('/courses').then(cs => {
+    const sel = qs('#nt-course');
+    cs.forEach(c => sel.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+  });
+}
+async function submitNote() {
+  try {
+    await api('/notes',{method:'POST',body:{
+      title:qs('#nt-title').value, subject:qs('#nt-subj').value,
+      course_id:qs('#nt-course').value||null, file_url:qs('#nt-url').value, description:qs('#nt-desc').value
+    }});
+    closeModal(); toast('Note uploaded!','ok'); pages.notes();
+  } catch(e) { toast(e.message,'err'); }
+}
+async function deleteNote(id) {
+  try { await api('/notes/'+id,{method:'DELETE'}); toast('Deleted','ok'); pages.notes(); }
+  catch(e) { toast(e.message,'err'); }
+}
+
+// ── TIMETABLE ─────────────────────────────────────────────────────────────────
+pages.timetable = async function() {
+  const c = qs('#page-content');
+  c.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    const data = await api('/timetable');
+    const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const byDay = {};
+    days.forEach(d => byDay[d] = []);
+    data.forEach(slot => { if(byDay[slot.day]) byDay[slot.day].push(slot); });
+    c.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">Timetable</div><div class="page-sub">Weekly class schedule</div></div>
+      <button class="btn btn-blue" onclick="showAddSlot()">➕ Add Slot</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+      ${days.map((day,i) => `
+        <div class="content-card dashboard-card card-${(i%3)+1}">
+          <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--p)">${day}</div>
+          ${byDay[day].length ? byDay[day].map(slot => `
+            <div class="tt-slot">
+              <div class="tt-slot-header">
+                <span class="tt-time">${slot.time_start}–${slot.time_end}</span>
+                <span class="badge badge-gray">${slot.room||''}</span>
+              </div>
+              <div class="tt-subj">${slot.subject}</div>
+              <div class="tt-meta">👨‍🏫 ${slot.faculty_name||'—'} • ${slot.course_name||'All'}</div>
+            </div>`).join('') : '<div style="color:var(--tx3);font-size:12px;padding:8px">No classes</div>'}
+        </div>`).join('')}
+    </div>`;
+  } catch(e) { toast(e.message,'err'); }
+};
+async function showAddSlot() {
+  const [courses, faculty] = await Promise.all([api('/courses'), api('/faculty')]);
+  openModal('Add Timetable Slot', `
+    <div class="form-row"><div class="form-group"><label class="form-label">Day</label>
+      <select class="form-select" id="tt-day">
+        ${['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].map(d=>`<option>${d}</option>`).join('')}
+      </select></div>
+    <div class="form-group"><label class="form-label">Subject</label>
+      <input class="form-input" id="tt-subj" placeholder="Physics"/></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Start Time</label>
+      <input class="form-input" id="tt-start" type="time" value="08:00"/></div>
+    <div class="form-group"><label class="form-label">End Time</label>
+      <input class="form-input" id="tt-end" type="time" value="09:30"/></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Course</label>
+      <select class="form-select" id="tt-course">${courses.map(c=>`<option value="${c.id}">${c.code}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Faculty</label>
+      <select class="form-select" id="tt-fac">${faculty.map(f=>`<option value="${f.id}">${f.name}</option>`).join('')}</select></div></div>
+    <div class="form-group"><label class="form-label">Room</label>
+      <input class="form-input" id="tt-room" placeholder="Room 1"/></div>`,
+    [{label:'Cancel',cls:'btn-ghost',fn:'closeModal()'},{label:'Add Slot',cls:'btn-blue',fn:'submitSlot()'}]
+  );
+}
+async function submitSlot() {
+  try {
+    await api('/timetable',{method:'POST',body:{
+      day:qs('#tt-day').value, subject:qs('#tt-subj').value,
+      time_start:qs('#tt-start').value, time_end:qs('#tt-end').value,
+      course_id:qs('#tt-course').value, faculty_id:qs('#tt-fac').value, room:qs('#tt-room').value
+    }});
+    closeModal(); toast('Slot added!','ok'); pages.timetable();
+  } catch(e) { toast(e.message,'err'); }
+}
+
+// ── WHATSAPP ──────────────────────────────────────────────────────────────────
+pages.whatsapp = async function() {
+  const c = qs('#page-content');
+  c.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    const logs = await api('/whatsapp');
+    c.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">WhatsApp Messaging</div><div class="page-sub">${logs.length} messages sent</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+      <div class="content-card">
+        <div style="font-size:15px;font-weight:700;margin-bottom:16px">📤 Send Message</div>
+        <div class="form-group"><label class="form-label">Recipient Number</label>
+          <input class="form-input" id="wa-to" placeholder="+91 9xxxxxxxxx"/></div>
+        <div class="form-group"><label class="form-label">Message</label>
+          <textarea class="form-textarea" id="wa-msg" placeholder="Type your message..."></textarea></div>
+        <button class="btn btn-blue" style="width:100%" onclick="sendWA()">Send Message</button>
+      </div>
+      <div class="content-card">
+        <div style="font-size:15px;font-weight:700;margin-bottom:16px">📢 Broadcast</div>
+        <div class="form-group"><label class="form-label">Message</label>
+          <textarea class="form-textarea" id="wa-broadcast" placeholder="Broadcast to all students..."></textarea></div>
+        <button class="btn btn-blue" style="width:100%;margin-bottom:8px" onclick="broadcastWA()">Broadcast to All</button>
+        <div style="font-size:12px;color:var(--tx3)">Sends to all active students with a phone number</div>
+      </div>
+    </div>
+    <div class="table-card" style="margin-top:18px">
+      <div class="table-toolbar"><span class="table-title">Recent Messages</span></div>
+      <table>
+        <thead><tr><th>Recipient</th><th>Message</th><th>Status</th><th>Sent</th></tr></thead>
+        <tbody>
+          ${logs.slice(0,20).map(l => `<tr>
+            <td style="font-weight:500">${l.recipient}</td>
+            <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.message}</td>
+            <td><span class="badge badge-green">${l.status}</span></td>
+            <td style="font-size:12px;color:var(--tx3)">${fmtDate(l.sent_at)}</td>
+          </tr>`).join('') || '<tr><td colspan="4"><div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">No messages sent yet</div></div></td></tr>'}
+        </tbody>
+      </table>
+    </div>`;
+  } catch(e) { toast(e.message,'err'); }
+};
+async function sendWA() {
+  const to = qs('#wa-to').value; const msg = qs('#wa-msg').value;
+  if (!to || !msg) { toast('Fill all fields','err'); return; }
+  try { await api('/whatsapp/send',{method:'POST',body:{recipient:to,message:msg}}); toast('Message sent!','ok'); pages.whatsapp(); }
+  catch(e) { toast(e.message,'err'); }
+}
+async function broadcastWA() {
+  const msg = qs('#wa-broadcast').value;
+  if (!msg) { toast('Enter message','err'); return; }
+  try {
+    const res = await api('/whatsapp/broadcast',{method:'POST',body:{message:msg}});
+    toast(`Broadcast sent to ${res.sent} students`,'ok'); pages.whatsapp();
+  } catch(e) { toast(e.message,'err'); }
+}
+
+// ── REPORTS ───────────────────────────────────────────────────────────────────
+pages.reports = async function() {
+  const c = qs('#page-content');
+  c.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    const data = await api('/reports');
+    c.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">Reports & Analytics</div><div class="page-sub">Institute performance overview</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+      <div class="table-card dashboard-card card-1">
+        <div class="table-toolbar"><span class="table-title">Fee Collection by Course</span></div>
+        <table>
+          <thead><tr><th>Course</th><th>Total</th><th>Collected</th><th>Pending</th></tr></thead>
+          <tbody>${(data.fees||[]).map(r=>`<tr>
+            <td style="font-weight:600">${r.course||'—'}</td>
+            <td>${fmt(r.total)}</td>
+            <td style="color:var(--ok)">${fmt(r.collected)}</td>
+            <td style="color:${r.pending>0?'var(--err)':'var(--ok)'}">${fmt(r.pending)}</td>
+          </tr>`).join('')||'<tr><td colspan="4" class="table-empty">No data</td></tr>'}</tbody>
+        </table>
+      </div>
+      <div class="table-card dashboard-card card-2">
+        <div class="table-toolbar"><span class="table-title">Attendance Report</span></div>
+        <table>
+          <thead><tr><th>Student</th><th>Present</th><th>Total</th><th>%</th></tr></thead>
+          <tbody>${(data.attendance||[]).map(r=>`<tr>
+            <td style="font-weight:600">${r.name}</td>
+            <td>${r.present}</td>
+            <td>${r.total}</td>
+            <td><span class="badge ${badgeType(r.pct>=75?'present':r.pct>=50?'late':'absent')}">${r.pct}%</span></td>
+          </tr>`).join('')||'<tr><td colspan="4" class="table-empty">No data</td></tr>'}</tbody>
+        </table>
+      </div>
+      <div class="table-card dashboard-card card-3">
+        <div class="table-toolbar"><span class="table-title">Exam Results</span></div>
+        <table>
+          <thead><tr><th>Student</th><th>Subject</th><th>Exam</th><th>Score</th></tr></thead>
+          <tbody>${(data.results||[]).slice(0,8).map(r=>`<tr>
+            <td style="font-weight:600">${r.name}</td>
+            <td>${r.subject}</td>
+            <td style="font-size:12px">${r.exam_type}</td>
+            <td><span class="badge ${r.pct>=75?'badge-green':r.pct>=50?'badge-yellow':'badge-red'}">${r.pct}%</span></td>
+          </tr>`).join('')||'<tr><td colspan="4" class="table-empty">No data</td></tr>'}</tbody>
+        </table>
+      </div>
+      <div class="table-card dashboard-card card-4">
+        <div class="table-toolbar"><span class="table-title">Course Fill Rate</span></div>
+        <table>
+          <thead><tr><th>Course</th><th>Enrolled</th><th>Seats</th><th>Fill %</th></tr></thead>
+          <tbody>${(data.courses||[]).map(r=>`<tr>
+            <td style="font-weight:600">${r.code}</td>
+            <td>${r.enrolled}</td>
+            <td>${r.seats}</td>
+            <td><div style="display:flex;align-items:center;gap:8px">
+              <div class="progress" style="width:80px"><div class="progress-fill blue" style="width:${r.fill_pct}%"></div></div>
+              <span>${r.fill_pct}%</span>
+            </div></td>
+          </tr>`).join('')||'<tr><td colspan="4" class="table-empty">No data</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>`;
+  } catch(e) { toast(e.message,'err'); }
+};
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────────
+pages.settings = function() {
+  const c = qs('#page-content');
+  c.innerHTML = `
+  <div class="page-header">
+    <div><div class="page-title">Settings</div><div class="page-sub">Account & system preferences</div></div>
+  </div>
+  <div style="max-width:540px;display:flex;flex-direction:column;gap:14px">
+    <div class="content-card">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+        <div class="avatar lg">${initials(ME.name)}</div>
+        <div>
+          <div style="font-size:18px;font-weight:700">${ME.name}</div>
+          <div style="color:var(--tx2);font-size:13px">${ME.email}</div>
+          <span class="badge ${ME.role==='admin'?'badge-purple':'badge-green'}" style="margin-top:6px">${ME.role}</span>
+        </div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin-bottom:18px">
+      <div class="form-group"><label class="form-label">Full Name</label>
+        <input class="form-input" value="${ME.name}" id="set-name"/></div>
+      <div class="form-group"><label class="form-label">Email</label>
+        <input class="form-input" value="${ME.email}" disabled/></div>
+      <button class="btn btn-blue btn-sm" onclick="toast('Profile saved!','ok')">Save Changes</button>
+    </div>
+    <div class="content-card">
+      <div style="font-size:15px;font-weight:700;margin-bottom:16px">🔒 Security</div>
+      <div class="form-group"><label class="form-label">Current Password</label>
+        <input class="form-input" type="password" placeholder="••••••••"/></div>
+      <div class="form-group"><label class="form-label">New Password</label>
+        <input class="form-input" type="password" placeholder="••••••••"/></div>
+      <button class="btn btn-ghost btn-sm" onclick="toast('Password updated!','ok')">Update Password</button>
+    </div>
+    <div class="content-card">
+      <div style="font-size:15px;font-weight:700;margin-bottom:16px">🏫 Institute Info</div>
+      <div style="font-size:13px;color:var(--tx2);line-height:1.8">
+        <div><b>Name:</b> Pathya Vriksha Classes</div>
+        <div><b>ERP Version:</b> 2.0 (Cloudflare Workers)</div>
+        <div><b>Database:</b> Cloudflare D1 (SQLite)</div>
+      </div>
+    </div>
+    <button class="btn btn-red" style="width:100%" onclick="showLogoutConfirm()">⏻ Sign Out</button>
+  </div>`;
+};
+
+// ── STUDENT PORTAL ────────────────────────────────────────────────────────────
+pages.portal = async function() {
+  const c = qs('#page-content');
+  c.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    const data = await api('/student/portal');
+    if (!data) return;
+    const s = data.student;
+    const att = data.attendance;
+    const balanceFee = (s.total_fee||0) - (s.paid_fee||0);
+    c.innerHTML = `
+    <div class="portal-header dashboard-card card-1">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+        <div class="avatar lg" style="box-shadow:0 4px 12px rgba(0,0,0,.2)">${initials(s.name)}</div>
+        <div>
+          <div class="portal-name">${s.name}</div>
+          <div class="portal-info">${s.enrollment_no} • ${s.course_name||'—'} • ${s.batch}</div>
+        </div>
+      </div>
+      <div class="portal-grid">
+        <div class="portal-stat"><div class="portal-stat-val">${att.percentage}%</div><div class="portal-stat-lbl">Attendance</div></div>
+        <div class="portal-stat"><div class="portal-stat-val">${fmt(s.paid_fee)}</div><div class="portal-stat-lbl">Paid</div></div>
+        <div class="portal-stat"><div class="portal-stat-val" style="color:${balanceFee>0?'#fca5a5':'#6ee7b7'}">${fmt(balanceFee)}</div><div class="portal-stat-lbl">Balance</div></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="content-card dashboard-card card-2">
+        <div style="font-size:15px;font-weight:700;margin-bottom:14px">📊 Attendance</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+          <div style="text-align:center;padding:10px;background:rgba(16,185,129,.08);border-radius:8px">
+            <div style="font-size:18px;font-weight:800;color:var(--ok)">${att.records.present||0}</div>
+            <div style="font-size:11px;color:var(--tx2)">Present</div>
+          </div>
+          <div style="text-align:center;padding:10px;background:rgba(239,68,68,.08);border-radius:8px">
+            <div style="font-size:18px;font-weight:800;color:var(--err)">${att.records.absent||0}</div>
+            <div style="font-size:11px;color:var(--tx2)">Absent</div>
+          </div>
+          <div style="text-align:center;padding:10px;background:rgba(245,158,11,.08);border-radius:8px">
+            <div style="font-size:18px;font-weight:800;color:var(--warn)">${att.records.late||0}</div>
+            <div style="font-size:11px;color:var(--tx2)">Late</div>
+          </div>
+        </div>
+        <div class="progress" style="height:10px">
+          <div class="progress-fill ${pctColor(att.percentage)}" style="width:${att.percentage}%"></div>
+        </div>
+        ${att.percentage<75?`<div style="background:rgba(239,68,68,.08);border-radius:8px;padding:10px;margin-top:12px;font-size:12px;color:var(--err)">⚠️ Your attendance is below 75%. Please attend regularly.</div>`:''}
+      </div>
+
+      <div class="content-card dashboard-card card-3">
+        <div style="font-size:15px;font-weight:700;margin-bottom:14px">📝 Recent Results</div>
+        ${(data.results||[]).slice(0,4).map(r => {
+          const p = pct(r.marks, r.max_marks);
+          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+            <div><div style="font-weight:600;font-size:13px">${r.subject}</div>
+              <div style="font-size:11px;color:var(--tx3)">${r.exam_type}</div></div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:12px;font-weight:700;color:${p>=75?'var(--ok)':p>=50?'var(--warn)':'var(--err)'}">${r.marks}/${r.max_marks}</span>
+              <span class="badge ${p>=75?'badge-green':p>=50?'badge-yellow':'badge-red'}">${p}%</span>
+            </div>
+          </div>`;
+        }).join('') || '<div style="color:var(--tx3);font-size:13px">No results yet</div>'}
+      </div>
+
+      <div class="content-card dashboard-card card-4" style="grid-column:1/-1">
+        <div style="font-size:15px;font-weight:700;margin-bottom:14px">📢 Latest Notices</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+          ${(data.notices||[]).slice(0,4).map(n => `
+            <div style="padding:12px;border-radius:10px;border:1px solid var(--border)">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                <span class="badge ${badgeType(n.type)}">${n.type}</span>
+                <span style="font-size:11px;color:var(--tx3)">${fmtDate(n.created_at)}</span>
+              </div>
+              <div style="font-weight:600;font-size:13px;margin-bottom:4px">${n.title}</div>
+              <p style="font-size:12px;color:var(--tx2)">${n.body.slice(0,80)}${n.body.length>80?'…':''}</p>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  } catch(e) { toast(e.message,'err'); }
+};
+</script>
+</body>
+</html>

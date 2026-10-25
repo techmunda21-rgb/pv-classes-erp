@@ -1,0 +1,32 @@
+{
+  // PV Classes ERP - Cloudflare Worker
+  "name": "pv-classes-erp",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-03-07",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+
+  // D1 Database binding
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pv-classes-db",
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+    }
+  ],
+
+  // Serve frontend from /public
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+
+  // Environment variables (set secrets via: wrangler secret put JWT_SECRET)
+  "vars": {
+    "ENVIRONMENT": "production"
+  }
+}
