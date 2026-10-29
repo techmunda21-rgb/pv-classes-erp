@@ -15,16 +15,16 @@ zone_name = "pvclasses.in"
 [[d1_databases]]
 binding      = "DB"
 database_name = "pv-erp-db"
-database_id  = "YOUR_D1_DATABASE_ID"        # after: wrangler d1 create pv-erp-db
+database_id  = "41bcf9c7-cb9d-4399-ab1d-43af0ab4e8ab"
 
 # ── KV (sessions + cache) ────────────────────────────────────
 [[kv_namespaces]]
 binding = "SESSIONS"
-id      = "YOUR_KV_SESSION_ID"              # wrangler kv:namespace create SESSIONS
+id      = "ed14fecf6f79447c8c1e2b2c99657834"
 
 [[kv_namespaces]]
 binding = "CACHE"
-id      = "YOUR_KV_CACHE_ID"               # wrangler kv:namespace create CACHE
+id      = "24057c5d4ed74228a14653a3c4ec8fa0"
 
 # ── R2 (file storage) ────────────────────────────────────────
 [[r2_buckets]]
