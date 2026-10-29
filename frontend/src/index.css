@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: #07090f;
+    --bg2: #0d1117;
+    --bg3: #161b27;
+    --accent: #4361ee;
+    --purple: #7c3aed;
+    --gold: #f4b942;
+    --fg: #e8eaf0;
+    --muted: #8892a4;
+    --border: rgba(255,255,255,0.08);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+}
+
+@layer components {
+  .card {
+    @apply bg-[#0d1117] border border-white/[0.08] rounded-2xl p-5;
+  }
+
+  .btn-primary {
+    @apply bg-[#4361ee] hover:bg-[#3b55d8] text-white font-semibold px-4 py-2 rounded-xl transition-colors;
+  }
+
+  .btn-ghost {
+    @apply bg-white/5 hover:bg-white/10 text-[#e8eaf0] font-medium px-4 py-2 rounded-xl transition-colors border border-white/[0.08];
+  }
+
+  .input {
+    @apply bg-[#161b27] border border-white/[0.08] rounded-xl px-3 py-2 text-[#e8eaf0] placeholder-[#8892a4] focus:outline-none focus:border-[#4361ee] w-full;
+  }
+
+  .label {
+    @apply text-xs font-semibold text-[#8892a4] uppercase tracking-wider mb-1.5 block;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .badge-blue { @apply badge bg-blue-500/20 text-blue-300; }
+  .badge-green { @apply badge bg-emerald-500/20 text-emerald-300; }
+  .badge-red { @apply badge bg-red-500/20 text-red-300; }
+  .badge-gold { @apply badge bg-amber-500/20 text-amber-300; }
+  .badge-purple { @apply badge bg-purple-500/20 text-purple-300; }
+
+  .stat-card {
+    @apply card flex flex-col gap-2;
+  }
+
+  .table-row {
+    @apply border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#8892a4] hover:text-[#e8eaf0] hover:bg-white/[0.05] transition-all;
+  }
+
+  .sidebar-link.active {
+    @apply bg-[#4361ee]/15 text-[#a5b4fc] border border-[#4361ee]/20;
+  }
+}

@@ -1,0 +1,53 @@
+name = "pv-erp-api"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ── Workers account ──────────────────────────────────────────
+account_id = "YOUR_CLOUDFLARE_ACCOUNT_ID"   # replace after `wrangler login`
+
+# ── Routes ───────────────────────────────────────────────────
+[routes]
+pattern = "api.pvclasses.in/*"
+zone_name = "pvclasses.in"
+
+# ── D1 Database ──────────────────────────────────────────────
+[[d1_databases]]
+binding      = "DB"
+database_name = "pv-erp-db"
+database_id  = "YOUR_D1_DATABASE_ID"        # after: wrangler d1 create pv-erp-db
+
+# ── KV (sessions + cache) ────────────────────────────────────
+[[kv_namespaces]]
+binding = "SESSIONS"
+id      = "YOUR_KV_SESSION_ID"              # wrangler kv:namespace create SESSIONS
+
+[[kv_namespaces]]
+binding = "CACHE"
+id      = "YOUR_KV_CACHE_ID"               # wrangler kv:namespace create CACHE
+
+# ── R2 (file storage) ────────────────────────────────────────
+[[r2_buckets]]
+binding     = "FILES"
+bucket_name = "pv-erp-files"               # wrangler r2 bucket create pv-erp-files
+
+# ── Environment secrets (set via wrangler secret) ────────────
+# wrangler secret put JWT_SECRET
+# wrangler secret put WHATSAPP_API_KEY
+# wrangler secret put RAZORPAY_KEY_ID
+# wrangler secret put RAZORPAY_KEY_SECRET
+# wrangler secret put SMTP_API_KEY
+
+# ── Environments ─────────────────────────────────────────────
+[env.staging]
+name = "pv-erp-api-staging"
+route = "api-staging.pvclasses.in/*"
+
+[env.production]
+name = "pv-erp-api"
+route = "api.pvclasses.in/*"
+
+# ── Observability ────────────────────────────────────────────
+[observability]
+enabled = true
+head_sampling_rate = 1
